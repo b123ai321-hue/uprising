@@ -1,0 +1,143 @@
+/* War-room look: muted ink + paper colours, no blur, no shadows. */
+:root{--ui:1;--bg:#16191b;--panel:#1f2427;--line:#3a4247;--ink:#d9d2c0;--dim:#8d918a;
+  --ember:#c4532f;--gold:#d9a441;--regime:#6f7480;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
+  font:calc(clamp(15px,.625vw,24px)*var(--ui))/1.35 "DejaVu Sans Condensed","Barlow Condensed",system-ui,sans-serif;}
+button{font:inherit;color:var(--ink);background:#2a3034;border:1px solid var(--line);
+  min-height:44px;min-width:44px;padding:6px 10px;border-radius:3px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+button.hot{background:var(--ember);border-color:#e0704a;color:#fff}
+button.ghost{background:none}
+select{font:inherit;min-height:44px;width:100%;background:#2a3034;color:var(--ink);border:1px solid var(--line)}
+h1,h2,h3{margin:.2em 0;font-weight:600;letter-spacing:.04em}
+h3{font-size:.8em;color:var(--dim);text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3px}
+.gtitle{letter-spacing:.18em}
+#grain{position:fixed;inset:0;pointer-events:none;opacity:.07;z-index:50;background-size:160px}
+.screen{display:none;position:fixed;inset:0;z-index:20;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
+.screen.on{display:flex}
+.screen h1{font-size:2.6em;margin:0} .sub{color:var(--dim);margin:0 0 14px}.fine{color:var(--dim);font-size:.75em;max-width:30em}
+button.big{min-width:220px;font-size:1.1em}
+
+/* ---------- phone layout (default): one column ---------- */
+#app{position:fixed;inset:0;display:grid;grid-template-rows:auto 44vh 1fr auto;
+  grid-template-columns:100%;grid-template-areas:"top" "map" "left" "bottom";}
+#top{grid-area:top;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:6px 10px;
+  padding-top:max(6px,env(safe-area-inset-top));background:var(--panel);border-bottom:1px solid var(--line);font-size:.85em}
+#top .gtitle.sm{font-size:1.05em} #res{display:flex;flex-wrap:wrap;gap:2px 10px}
+#res i{font-style:normal;color:var(--dim)}
+#mapWrap{grid-area:map;position:relative;min-height:0;border-bottom:1px solid var(--line)}
+#map{display:block;width:100%;height:100%;touch-action:none}
+#zoomBtns{position:absolute;right:6px;top:6px;display:flex;flex-direction:column;gap:4px}
+#zoomBtns button{background:#1f2427cc;font-size:1.2em;padding:0}
+#tip{position:absolute;pointer-events:none;background:#101314;border:1px solid var(--line);padding:3px 6px;font-size:.8em;white-space:nowrap}
+#left,#right{overflow-y:auto;overflow-x:hidden;padding:8px 10px;min-height:0}
+#left{grid-area:left} #right{display:none}
+/* bottom bar (Game Artist spec, v0.2.1): dark war-room panel, red only on the active item */
+#bottom{grid-area:bottom;display:flex;align-items:center;gap:2px;min-height:56px;padding:0 6px;padding-bottom:env(safe-area-inset-bottom);
+  background:rgba(11,14,19,.94);border-top:1px solid #2a313c}
+#bottom button{flex:1;min-height:44px;min-width:44px;background:transparent;border:none;border-radius:0;color:#8a94a3;
+  font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:4px 2px;position:relative}
+#bottom button.tab.on{color:#e8ecf1}
+#bottom button.tab.on::before{content:"";position:absolute;left:18%;right:18%;top:0;height:2px;background:#ff2d4a}
+#bottom button.hot{flex:0 0 auto;width:110px;height:44px;min-height:44px;background:transparent;border:1px solid #ff2d4a;border-radius:2px;
+  color:#ff2d4a;font-size:12px;letter-spacing:.08em}
+#bottom button.hot:active{background:rgba(255,45,74,.12)}
+@media (hover:hover){#bottom button.hot:hover{background:rgba(255,45,74,.12)}}
+#bottom button:disabled{opacity:.4}
+.card{background:var(--panel);border:1px solid var(--line);padding:8px;margin:0 0 8px}
+.row{display:flex;gap:6px;flex-wrap:wrap}.row>button{flex:1 1 140px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.acts button{text-align:left;font-size:.88em;line-height:1.15}
+.acts small,.cardBtn small{display:block;color:var(--dim);font-size:.8em}
+.bar{height:6px;background:#333a3e;margin:2px 0 6px}.bar>b{display:block;height:100%;background:var(--gold)}
+.bar.red>b{background:var(--ember)}
+.log{font-size:.8em;color:var(--dim)} .log p{margin:0 0 3px}.log b{color:var(--ink);font-weight:500}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;font-size:.88em}.kv span:nth-child(odd){color:var(--dim)}
+.tag{display:inline-block;padding:0 5px;border:1px solid var(--line);font-size:.75em;color:var(--dim)}
+.wide-only{display:none}
+#modal{position:fixed;inset:0;z-index:40;background:#000b;display:flex;align-items:center;justify-content:center;padding:10px}
+#modal[hidden]{display:none}
+#mbox{background:var(--panel);border:1px solid var(--line);padding:14px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
+#paused{position:fixed;inset:0;z-index:60;display:none;place-items:center;background:#000a;font-size:1.4em}
+body.paused #paused{display:grid}
+.ctr{display:inline-flex;align-items:center;gap:4px;margin:2px 8px 2px 0}
+.ctr svg{vertical-align:middle}
+
+/* ---------- PC layout: wide screens get side panels ---------- */
+@media (min-width:1000px) and (min-aspect-ratio:4/3){
+  #app{grid-template-rows:auto 1fr auto;grid-template-columns:minmax(260px,15%) 1fr minmax(280px,16%);
+    grid-template-areas:"top top top" "left map right" "bottom bottom bottom"}
+  #right{display:block;grid-area:right;border-left:1px solid var(--line)}
+  #left{border-right:1px solid var(--line)}
+  #mapWrap{border:none}
+  #bottom{justify-content:flex-end} #bottom .tab{display:none}
+  .wide-only{display:block}
+}
+/* extra map layers (front line, unit tokens) sit on top; taps go through to #map */
+.layer{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+
+/* other controls in the same dark style (no browser-default light widgets) */
+select{appearance:none;-webkit-appearance:none;border-radius:2px;padding:0 32px 0 10px;
+  background:#0f1318 linear-gradient(45deg,transparent 50%,#8a94a3 50%) no-repeat right 16px center/6px 6px;}
+select option{background:#0f1318;color:var(--ink)}
+#zoomBtns button{background:rgba(11,14,19,.94);border-color:#2a313c;color:#8a94a3}
+button:focus-visible,select:focus-visible{outline:1px solid #ff2d4a;outline-offset:1px}
+html{color-scheme:dark}
+#bottom #bStart{width:auto;padding:0 18px;margin-left:auto}
+/* 0.2.1b: bottom bar grows on big screens (390px stays exactly the same; --ui = UI scale setting) */
+#bottom{min-height:calc(clamp(56px,2.9vw,100px) * var(--ui))}
+#bottom button{font-size:calc(clamp(11px,.55vw,20px) * var(--ui))}
+/* 0.2.1c: End Week stays SMALL: max 150x44, font max 16px; labels above still scale */
+#bottom button.hot{height:44px;min-height:44px;width:calc(clamp(110px,5.8vw,150px) * var(--ui));
+  font-size:calc(clamp(12px,.6vw,16px) * var(--ui))}
+#bottom #bStart{width:auto;padding:0 calc(clamp(18px,.9vw,32px) * var(--ui))}
+@media (min-width:2560px){ #bottom{border-top-width:2px} #bottom button.tab.on::before{height:3px} #bottom button.hot{border-width:2px} }
+/* 0.3.0 upkeep warning: amber = upkeep near income, red = upkeep above income */
+.warn{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 8px;border:1px solid #ffb02e;background:#2a1f0a;color:#ffd27a;font-size:.8em}
+.warn canvas{width:44px;height:44px;margin:-8px 0 -8px -8px}   /* the icon itself is the 44px tap target */
+.warnBox canvas{width:44px;height:44px;flex:none}
+.warn.red{border-color:#e4573a;color:#ffb0a0;background:#2a120c}
+.warnBox{display:flex;align-items:center;gap:8px;padding:6px;border:1px solid #ffb02e;color:#ffd27a}
+.warnBox.red{border-color:#e4573a;color:#ffb0a0}
+/* 0.3.0b first-time tips + icon legend */
+#tipbox{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(clamp(56px,2.9vw,100px) * var(--ui) + 10px);z-index:70;max-width:min(92vw,40em);
+  display:flex;gap:10px;align-items:center;background:#101416f2;border:1px solid #ffb02e;padding:6px 10px;font-size:.9em}
+#tipbox button{min-height:44px;min-width:44px;flex:none}
+.legend{display:grid;gap:6px}.lg{display:flex;align-items:center;gap:10px}.lg canvas{flex:none}.lg span{font-size:.88em}
+.tog{min-height:44px;min-width:44px}
+.warnTxt{color:#ffb02e;font-weight:600}
+.regCv{width:100%;display:block}
+/* tips never block taps: clicks pass through the text, only OK catches them; on phones the tip sits over the map */
+#tipbox{pointer-events:none}#tipbox button{pointer-events:auto}
+/* 0.6.2: phone tips sat at top:64px over the map's top labels (Warmian-Masurian); they now sit above the bottom bar, over the panel */
+.rlWrap{position:relative}.rlHit{position:absolute;background:transparent;border:0;min-height:48px;cursor:pointer}.rlHit:focus-visible{outline:2px solid #ffb02e}
+/* 0.5.4: #tipbox{display:flex} beat the [hidden] attribute, so "hidden" tips stayed on screen over panels */
+#tipbox[hidden]{display:none}
+
+/* 0.6.1 regime-type picker: 6 stacked 88px cards, each one tap target */
+.govList{display:flex;flex-direction:column;gap:8px}
+.govCard{display:block;width:100%;height:88px;cursor:pointer}
+.govCard:focus{outline:2px solid #e8b04a}
+
+/* 0.6.2 foreign deal card: buttons are placed on Foreign.deal's 44px hit boxes by drawPow() */
+.powCv,.dealCv{display:block;width:100%}
+.dealBox{position:relative;margin:6px 0}
+.dealBox.art .dealBtn{position:absolute;min-height:44px;background:transparent;border:0;padding:0;cursor:pointer}
+.dealBox .dealBtn:focus{outline:2px solid #e8b04a}
+
+/* 0.10.0 full PC version: wider side panels at desktop sizes, hover states, key hints (the phone layout below 1000px is untouched) */
+@media (min-width:1000px) and (min-aspect-ratio:4/3){
+  #app{grid-template-columns:clamp(300px,21vw,820px) 1fr clamp(320px,23vw,880px)}
+  #keyHints{flex:1 1 auto;align-self:center;margin:0 12px;min-width:0}
+}
+@media (hover:hover) and (pointer:fine){
+  button:not(:disabled):hover{border-color:#22e1ff;box-shadow:0 0 0 1px #22e1ff inset;cursor:pointer}
+  .card:hover{border-color:#2c3a50}
+  .govCard:hover{cursor:pointer}
+}
+kbd{font:600 .72em system-ui,sans-serif;border:1px solid #2c3a50;border-bottom:2px solid #22e1ff;background:#141b27;color:#d8e2f0;padding:0 4px;margin-left:6px;border-radius:2px}
+.watched{color:#ff8a3d}
+/* 0.10.0 perf: map canvases get their own layers and the side panels are isolated, so a map redraw doesn't repaint the panels */
+#map,#tok{will-change:transform}
+#left,#right,#top,#bottom{contain:layout paint}

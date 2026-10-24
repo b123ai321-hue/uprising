@@ -1,0 +1,1 @@
+- warn.js / warn.svg: original code-drawn upkeep warning icon by the studio team.
